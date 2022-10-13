@@ -1,0 +1,113 @@
+name: builder
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  schedule:
+    - cron:  '13 17 11 * *'
+
+env:
+  DOCKER_BUILDKIT: 1
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  startup:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.startat.outputs.date }}
+      openh264ver: ${{ steps.openh264.outputs.ver }}
+    steps:
+      - name: Get the date
+        id: startat
+        run: |
+          DATE=$(date "+%Y-%m-%d")
+          echo ::set-output name=date::${DATE}
+          echo "DATE: ${DATE}"
+      - name: Get OpenH264 relase version
+        id: openh264
+        run: |
+          VER=$(wget https://api.github.com/repos/cisco/openh264/releases/latest -O - | jq -r ".tag_name" | awk '{ print substr($1,2) }')
+          echo ::set-output name=ver::${VER}
+          echo "VER: ${VER}"
+  build:
+    needs: [startup]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [win64, win32]
+        variant: [lgpl-shared, lgpl-shared 4.4, lgpl-shared 5.1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          config: .github/buildkit.toml
+          driver: docker
+      - name: Build Image
+        run: |
+          OPENH264PRECOMPILED="${{ needs.startup.outputs.openh264ver }}" bash do.bash
+          cd FFmpeg-Builds
+          GITHUB_ACTIONS="" GITHUB_REPOSITORY="" ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
+      - name: Build ffmpeg
+        run: |
+          cd FFmpeg-Builds
+          GITHUB_ACTIONS="" GITHUB_REPOSITORY="" ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ffmpeg
+          path: FFmpeg-Builds/artifacts/*
+  create-release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Create release
+        run: |
+          TAG="rel.${{ needs.startup.outputs.date }}"
+          OPENH264VER="${{ needs.startup.outputs.openh264ver }}"
+          git tag "${TAG}"
+          git push origin "${TAG}"
+          
+          ls -1 ffmpeg/ | sed 's/\(ffmpeg-\(.*\)-\(win\(32\|64\)\)\(-lgpl\)\?\(-shared\)\?\(-.*\)\?\.zip\)/\2|\3|\5|\6|\7|\1/g' | awk -F '|' '{ printf "%5s|%-16s|%-4s|%-5s|%s\n", substr($5,2), $2, toupper(substr($3, 2)), substr($4, 2), $6 }' | sort > /tmp/files.txt
+          echo "[OpenH264 v${OPENH264VER}](https://github.com/cisco/openh264/releases/tag/v${OPENH264VER}) is required to use this release." > /tmp/notes.txt
+          echo -e "\n### Windows 64bit\n" >> /tmp/notes.txt
+          cat /tmp/files.txt | grep win64 | while IFS= read line
+          do
+            IFS='|' read ver platform license link filename <<< "$line"
+            ver=$(echo "$ver" | tr -d ' ')
+            if [[ $ver == "" ]]; then
+              ver="latest"
+            fi
+            link=$(echo "$link" | tr -d ' ')
+            if [[ $link == "" ]]; then
+              ver="static"
+            fi
+            platform=$(echo "$platform" | tr -d ' ')
+            license=$(echo "$license" | tr -d ' ')
+            echo "- [ffmpeg-$ver, $license, $platform-$link](https://github.com/oov/ffmpeg-openh264-win/releases/download/${TAG}/$filename)" >> /tmp/notes.txt
+          done
+          echo -e "\n### Windows 32bit\n" >> /tmp/notes.txt
+          cat /tmp/files.txt | grep win32 | while IFS= read line
+          do
+            IFS='|' read ver platform license link filename <<< "$line"
+            ver=$(echo "$ver" | tr -d ' ')
+            if [[ $ver == "" ]]; then
+              ver="latest"
+            fi
+            link=$(echo "$link" | tr -d ' ')
+            if [[ $link == "" ]]; then
+              ver="static"
+            fi
+            platform=$(echo "$platform" | tr -d ' ')
+            license=$(echo "$license" | tr -d ' ')
+            echo "- [ffmpeg-$ver, $license, $platform-$link](https://github.com/oov/ffmpeg-openh264-win/releases/download/${TAG}/$filename)" >> /tmp/notes.txt
+          done
+          gh release create --title "Auto build ${{ needs.startup.outputs.date }}" --notes-file /tmp/notes.txt ${TAG} ffmpeg/*
