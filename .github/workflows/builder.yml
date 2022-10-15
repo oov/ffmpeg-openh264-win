@@ -62,7 +62,7 @@ jobs:
           name: ffmpeg
           path: FFmpeg-Builds/artifacts/*
   create-release:
-    needs: [build]
+    needs: [startup, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
