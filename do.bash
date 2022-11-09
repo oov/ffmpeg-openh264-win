@@ -2,10 +2,7 @@
 git clone --depth 1 https://github.com/BtbN/FFmpeg-Builds
 cd FFmpeg-Builds
 
-sed -i 's/CT_ZLIB_V_1_2_12/CT_ZLIB_V_1_2_13/' images/base-win32/ct-ng-config
-sed -i 's/\(CT_ZLIB_VERSION="\)\(1\.2\.12\)/\11.2.13/' images/base-win32/ct-ng-config
-sed -i 's/CT_ZLIB_V_1_2_12/CT_ZLIB_V_1_2_13/' images/base-win64/ct-ng-config
-sed -i 's/\(CT_ZLIB_VERSION="\)\(1\.2\.12\)/\11.2.13/' images/base-win64/ct-ng-config
+sed -i "s/-u '\$SCRIPT_HGREV' //" scripts.d/25-gmp.sh
 
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
