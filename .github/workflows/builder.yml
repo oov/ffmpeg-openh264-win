@@ -26,7 +26,7 @@ jobs:
           DATE=$(date "+%Y-%m-%d")
           echo ::set-output name=date::${DATE}
           echo "DATE: ${DATE}"
-      - name: Get OpenH264 relase version
+      - name: Get OpenH264 release version
         id: openh264
         run: |
           VER=$(wget https://api.github.com/repos/cisco/openh264/releases/latest -O - | jq -r ".tag_name" | awk '{ print substr($1,2) }')
