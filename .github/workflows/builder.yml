@@ -24,16 +24,16 @@ jobs:
         id: startat
         run: |
           DATE=$(date "+%Y-%m-%d")
-          echo ::set-output name=date::${DATE}
+          echo "date=${DATE}" >> $GITHUB_OUTPUT
           echo "DATE: ${DATE}"
       - name: Get OpenH264 release version
         id: openh264
         run: |
           VER=$(wget https://api.github.com/repos/cisco/openh264/releases/latest -O - | jq -r ".tag_name" | awk '{ print substr($1,2) }')
-          echo ::set-output name=ver::${VER}
+          echo "ver=${VER}" >> $GITHUB_OUTPUT
           echo "VER: ${VER}"
-          HASH=$(https://api.github.com/repos/cisco/openh264/git/ref/tags/v${VER} -O - | jq -r ".object.sha")
-          echo ::set-output name=hash::${HASH}
+          HASH=$(wget https://api.github.com/repos/cisco/openh264/git/ref/tags/v${VER} -O - | jq -r ".object.sha")
+          echo "hash=${HASH}" >> $GITHUB_OUTPUT
           echo "HASH: ${HASH}"
   build:
     needs: [startup]
