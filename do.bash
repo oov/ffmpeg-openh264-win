@@ -7,7 +7,7 @@ sed -i "s/-u '\$SCRIPT_HGREV' //" scripts.d/25-gmp.sh
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
 sed -i 's/\(make.*\)/\1 \&\& openh264_swap_lib/' scripts.d/50-openh264.sh
-sed -i 's/\(SCRIPT_COMMIT="\).*\?\("\)/\1${OPENH264HASH}\2/' scripts.d/50-openh264.sh
+sed -i 's/\(SCRIPT_COMMIT="\).*\?\("\)/\1'${OPENH264HASH}'\2/' scripts.d/50-openh264.sh
 echo -e "\nOPENH264PRECOMPILED=${OPENH264PRECOMPILED}\n" >> scripts.d/50-openh264.sh
 cat << 'EOS' >> scripts.d/50-openh264.sh
 openh264_swap_lib() {
