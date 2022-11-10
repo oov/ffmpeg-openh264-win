@@ -2,7 +2,9 @@
 git clone --depth 1 https://github.com/BtbN/FFmpeg-Builds
 cd FFmpeg-Builds
 
-sed -i "s/-u '\$SCRIPT_HGREV' //" scripts.d/25-gmp.sh
+# hg clone failure rate too high, use tarball
+sed -i 's/hg clone.*gmp/mkdir gmp \&\& wget https:\/\/gmplib.org\/download\/gmp\/gmp-6.2.1.tar.xz -O - | tar Jx -C gmp --strip-component 1/' scripts.d/25-gmp.sh
+sed -i 's/\.\/\.bootstrap//' scripts.d/25-gmp.sh
 
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
