@@ -1,6 +1,6 @@
 # ffmpeg-openh264-win
 
-[BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds) のスクリプトを利用して Windows 用の ffmpeg を自動ビルドするリポジトリです。
+[BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds) のスクリプトを利用して Windows 用の FFmpeg を自動ビルドするリポジトリです。
 
 毎月1回自動ビルドする設定にしてありますが、失敗などでスケジュールは変わるかも知れません。
 

@@ -19,6 +19,7 @@ jobs:
       date: ${{ steps.startat.outputs.date }}
       openh264ver: ${{ steps.openh264.outputs.ver }}
       openh264hash: ${{ steps.openh264.outputs.hash }}
+      gmpliburl: ${{ steps.gmp.outputs.url }}
     steps:
       - name: Get the date
         id: startat
@@ -26,7 +27,7 @@ jobs:
           DATE=$(date "+%Y-%m-%d")
           echo "date=${DATE}" >> $GITHUB_OUTPUT
           echo "DATE: ${DATE}"
-      - name: Get OpenH264 release version
+      - name: Get OpenH264 Release Version
         id: openh264
         run: |
           VER=$(wget https://api.github.com/repos/cisco/openh264/releases/latest -O - | jq -r ".tag_name" | awk '{ print substr($1,2) }')
@@ -35,6 +36,12 @@ jobs:
           HASH=$(wget https://api.github.com/repos/cisco/openh264/git/ref/tags/v${VER} -O - | jq -r ".object.sha")
           echo "hash=${HASH}" >> $GITHUB_OUTPUT
           echo "HASH: ${HASH}"
+      - name: Get GMP Release Archive URL
+        id: gmp
+        run: |
+          URL=$(wget https://gmplib.org/ -O - | grep gmplib.org\.\*tar\.xz\" | sed 's/.*\(gmplib.*xz\)\".*/https:\/\/\1/')
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+          echo "URL: ${URL}"
   build:
     needs: [startup]
     runs-on: ubuntu-latest
@@ -53,7 +60,7 @@ jobs:
           driver: docker
       - name: Build Image
         run: |
-          OPENH264PRECOMPILED="${{ needs.startup.outputs.openh264ver }}" OPENH264HASH="${{ needs.startup.outputs.openh264hash }}" bash do.bash
+          OPENH264PRECOMPILED="${{ needs.startup.outputs.openh264ver }}" OPENH264HASH="${{ needs.startup.outputs.openh264hash }}" GMPLIBURL="${{ needs.startup.outputs.gmpliburl }}" bash do.bash
           cd FFmpeg-Builds
           GITHUB_ACTIONS="" GITHUB_REPOSITORY="" ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Build ffmpeg
