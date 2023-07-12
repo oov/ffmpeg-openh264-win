@@ -2,10 +2,11 @@
 git clone --depth 1 https://github.com/BtbN/FFmpeg-Builds
 cd FFmpeg-Builds
 
-# hg clone failure rate too high, use tarball
-sed -i "2i GMPLIBURL=\"${GMPLIBURL}\"" scripts.d/25-gmp.sh
-sed -i 's/hg clone.*gmp/mkdir gmp \&\& wget '"'\${GMPLIBURL}'"' -O - | tar Jx -C gmp --strip-component 1/' scripts.d/25-gmp.sh
-sed -i 's/\.\/\.bootstrap//' scripts.d/25-gmp.sh
+# Unnecessary because you are currently using a mirror
+# # hg clone failure rate too high, use tarball
+# sed -i "2i GMPLIBURL=\"${GMPLIBURL}\"" scripts.d/25-gmp.sh
+# sed -i 's/hg clone.*gmp/mkdir gmp \&\& wget '"'\${GMPLIBURL}'"' -O - | tar Jx -C gmp --strip-component 1/' scripts.d/25-gmp.sh
+# sed -i 's/\.\/\.bootstrap//' scripts.d/25-gmp.sh
 
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
