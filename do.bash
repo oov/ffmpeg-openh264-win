@@ -8,6 +8,9 @@ cd FFmpeg-Builds
 # sed -i 's/hg clone.*gmp/mkdir gmp \&\& wget '"'\${GMPLIBURL}'"' -O - | tar Jx -C gmp --strip-component 1/' scripts.d/25-gmp.sh
 # sed -i 's/\.\/\.bootstrap//' scripts.d/25-gmp.sh
 
+# use mingw-w64 mirror
+sed -i 's/https\:\/\/git\.code\.sf\.net\/p\/mingw-w64\/mingw-w64\.git/https:\/\/github.com\/mingw-w64\/mingw-w64.git/' scripts.d/10-mingw.sh
+
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
 sed -i 's/\(make.*\)/\1 \&\& openh264_swap_lib/' scripts.d/50-openh264.sh
