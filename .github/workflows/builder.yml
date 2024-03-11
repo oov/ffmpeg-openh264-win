@@ -19,7 +19,6 @@ jobs:
       date: ${{ steps.startat.outputs.date }}
       openh264ver: ${{ steps.openh264.outputs.ver }}
       openh264hash: ${{ steps.openh264.outputs.hash }}
-      # gmpliburl: ${{ steps.gmp.outputs.url }}
     steps:
       - name: Get the date
         id: startat
@@ -36,12 +35,6 @@ jobs:
           HASH=$(wget https://api.github.com/repos/cisco/openh264/git/ref/tags/v${VER} -O - | jq -r ".object.sha")
           echo "hash=${HASH}" >> $GITHUB_OUTPUT
           echo "HASH: ${HASH}"
-      # - name: Get GMP Release Archive URL
-      #   id: gmp
-      #   run: |
-      #     URL=$(wget https://gmplib.org/ -O - | grep gmplib.org\.\*tar\.xz\" | sed 's/.*\(gmplib.*xz\)\".*/https:\/\/\1/')
-      #     echo "url=${URL}" >> $GITHUB_OUTPUT
-      #     echo "URL: ${URL}"
   build:
     needs: [startup]
     runs-on: ubuntu-latest
@@ -51,19 +44,15 @@ jobs:
         target: [win64, win32]
         variant: [lgpl-shared, lgpl-shared 4.4, lgpl-shared 5.1, lgpl-shared 6.1]
     steps:
-      - name: Install buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          config: .github/buildkit.toml
-          driver: docker
-      # - name: Login to Docker
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ github.token }}
+      - name: Install Latest Docker
+        run: |
+          # FFmpeg-Builds script uses OCI image format with the Docker save command, so it requires Docker 25 or later.
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build Image
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -71,14 +60,19 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
-          # GMPLIBURL="${{ needs.startup.outputs.gmpliburl }}"
           OPENH264PRECOMPILED="${{ needs.startup.outputs.openh264ver }}" OPENH264HASH="${{ needs.startup.outputs.openh264hash }}" bash do.bash
           cd FFmpeg-Builds
-          GITHUB_ACTIONS="" GITHUB_REPOSITORY="" ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
+          unset GITHUB_ACTIONS
+          unset GITHUB_REPOSITORY
+          docker version
+          DOCKER_BUILDKIT=1 NOCLEAN=1 bash ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }} || echo "Failed"
+          ls -la .cache/images/base
       - name: Build ffmpeg
         run: |
           cd FFmpeg-Builds
-          GITHUB_ACTIONS="" GITHUB_REPOSITORY="" ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
+          unset GITHUB_ACTIONS
+          unset GITHUB_REPOSITORY
+          bash ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
