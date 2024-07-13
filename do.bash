@@ -5,6 +5,9 @@ cd FFmpeg-Builds
 # use mingw-w64 mirror
 sed -i 's/https\:\/\/git\.code\.sf\.net\/p\/mingw-w64\/mingw-w64\.git/https:\/\/github.com\/mingw-w64\/mingw-w64.git/' scripts.d/10-mingw.sh
 
+# add -Wno-int-conversion to CFLAGS and CXXFLAGS for win32
+sed -i 's/\(CFLAGS\|CXXFLAGS\)="\(.*\)"/\1="\2 -Wno-int-conversion"/' images/base-win32/Dockerfile
+
 sed -i 's/gawk/gawk mingw-w64-tools/' images/base/Dockerfile
 
 sed -i 's/\(make.*\)/\1 \&\& openh264_swap_lib/' scripts.d/50-openh264.sh
