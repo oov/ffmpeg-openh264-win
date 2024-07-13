@@ -9,7 +9,6 @@ on:
     - cron:  '13 17 11 * *'
 
 env:
-  DOCKER_BUILDKIT: 1
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
@@ -70,8 +69,8 @@ jobs:
           unset GITHUB_ACTIONS
           unset GITHUB_REPOSITORY
           docker version
-          DOCKER_BUILDKIT=1 NOCLEAN=1 bash ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }} $VER || echo "Failed"
-          ls -la .cache/images/base
+          NOCLEAN=1 bash ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }} $VER || echo "Failed"
+          (echo "cache info" && ls -la .cache/images/)
       - name: Build ffmpeg
         run: |
           cd FFmpeg-Builds
