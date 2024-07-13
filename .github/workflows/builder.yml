@@ -43,7 +43,7 @@ jobs:
       matrix:
         target: [win64, win32]
         variant: [lgpl-shared]
-        version: [master, 4.4, 5.1, 6.1, 7.0]
+        version: [master, '4.4', '5.1', '6.1', '7.0']
     steps:
       - name: Install Latest Docker
         run: |
