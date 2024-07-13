@@ -74,7 +74,7 @@ jobs:
           unset GITHUB_REPOSITORY
           bash ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg
           path: FFmpeg-Builds/artifacts/*
@@ -83,9 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Create release
         run: |
           TAG="rel.${{ needs.startup.outputs.date }}"
