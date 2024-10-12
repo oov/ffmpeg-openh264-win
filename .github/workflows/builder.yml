@@ -42,24 +42,62 @@ jobs:
       matrix:
         target: [win64, win32]
         variant: [lgpl-shared]
-        version: [master, '4.4', '5.1', '6.1', '7.0']
+        version: [master, '4.4', '5.1', '6.1', '7.0', '7.1']
     steps:
       - name: Install Latest Docker
         run: |
-          # FFmpeg-Builds script uses OCI image format with the Docker save command, so it requires Docker 25 or later.
+          sudo apt purge -y \
+            ansible* \
+            aria2* \
+            aspnetcore* \
+            azure-cli* \
+            cabal* \
+            clang* \
+            dotnet-* \
+            firefox* \
+            gfortran-* \
+            ghc* \
+            google-chrome-stable* \
+            google-cloud-sdk* \
+            heroku* \
+            imagemagick* \
+            javascript* \
+            kubectl* \
+            llvm* \
+            mono* \
+            mysql* \
+            nginx* \
+            node* \
+            npm* \
+            nuget* \
+            php* \
+            postgresql* \
+            powershell* \
+            rpm* \
+            ruby* \
+            sqlite3* \
+            subversion \
+            temurin* \
+            tmux* \
+            vim* \
+            yarn*
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
           sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
           sudo apt-get update
           sudo apt-get install docker-ce
-          sudo apt-get clean
+          sudo apt-get autoremove -y >/dev/null 2>&1 || true
+          sudo apt-get autoclean -y >/dev/null 2>&1 || true
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build Image
         run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          docker images
+          sudo rm -rf "/opt/ghc" || true
+          sudo rm -rf "/usr/share/dotnet" || true
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY" || true
+          sudo rm -rf "/usr/local/lib/android" || true
+          sudo rm -rf "/usr/local/share/boost" || true
+          sudo rm -rf "/opt/hostedtoolcache/CodeQL" || true
           sudo docker image prune --all --force
           OPENH264PRECOMPILED="${{ needs.startup.outputs.openh264ver }}" OPENH264HASH="${{ needs.startup.outputs.openh264hash }}" bash do.bash
           VER=${{ matrix.version }}
