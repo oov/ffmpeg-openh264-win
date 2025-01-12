@@ -2,9 +2,6 @@
 git clone --depth 1 https://github.com/BtbN/FFmpeg-Builds
 cd FFmpeg-Builds
 
-# use mingw-w64 mirror
-sed -i 's/https\:\/\/git\.code\.sf\.net\/p\/mingw-w64\/mingw-w64\.git/https:\/\/github.com\/mingw-w64\/mingw-w64.git/' scripts.d/10-mingw.sh
-
 # add -Wno-int-conversion to CFLAGS for win32
 sed -i 's/FF_CFLAGS/FF_CFLAGS -Wno-int-conversion/' build.sh
 
