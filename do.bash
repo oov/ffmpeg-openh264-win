@@ -23,7 +23,7 @@ openh264_swap_lib() {
   OPENH264DLLNAME=openh264-${OPENH264PRECOMPILED}-${TARGET}
   wget http://ciscobinary.openh264.org/${OPENH264DLLNAME}.dll.bz2 -O - | bzcat > /tmp/${OPENH264DLLNAME}.dll
   gendef - /tmp/${OPENH264DLLNAME}.dll > /tmp/${OPENH264DLLNAME}.def
-  "$FFBUILD_CROSS_PREFIX"dlltool -m ${OPENH264MACHINE} --input-def /tmp/${OPENH264DLLNAME}.def --dllname ${OPENH264DLLNAME}.dll --output-lib /opt/ffbuild/lib/libopenh264.a
+  "$FFBUILD_CROSS_PREFIX"dlltool -m ${OPENH264MACHINE} --input-def /tmp/${OPENH264DLLNAME}.def --dllname ${OPENH264DLLNAME}.dll --output-lib /opt/ffdest/opt/ffbuild/lib/libopenh264.a
 }
 EOS
 
